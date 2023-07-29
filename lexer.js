@@ -18,11 +18,26 @@ function parseStatement(str) {
         obj['type'] = 'Declaration';
         obj['value'] = str;
     } else if(str === '=') {
-        obj['type'] = 'Equals';
+        obj['type'] = 'Operator-Equals';
         obj['value'] = str;
     } else if((str[0] === '"' && str[str.length - 1] === '"') || 
               (str[0] === "'" && str[str.length - 1] === "'")) {
         obj['type'] = 'String'
+        obj['value'] = str;
+    } else if(!isNaN(Number(str))) {
+        obj['type'] = 'Number';
+        obj['value'] = Number(str);
+    } else if(str === '+') {
+        obj['type'] = 'Operator-Plus';
+        obj['value'] = str;
+    } else if(str === '-') {
+        obj['type'] = 'Operator-Minus';
+        obj['value'] = str;
+    } else if(str === '*') {
+        obj['type'] = 'Operator-Multiply';
+        obj['value'] = str;
+    } else if(str === '/') {
+        obj['type'] = 'Operator-Divide';
         obj['value'] = str;
     } else {
         obj['type'] = 'Identifier';

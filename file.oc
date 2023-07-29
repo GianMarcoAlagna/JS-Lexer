@@ -1,1 +1,1 @@
-variable id = 'hello'.
+variable id = 123 + 3.
