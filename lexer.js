@@ -8,40 +8,38 @@ const content = fs.readFileSync('./file.oc', 'utf-8', async (err, dat) => {
     }
 });
 
-let result = [];
-
-function parseStatement(str) {
+function parseStatement(token) {
     const obj = {};
-    console.log(str)
+    console.log(token)
 
-    if(str === 'variable') {
+    function isOp(token) {
+        return /[+\-*/=]/.test(token);
+    }
+
+    function isString(token) {
+        return ((token[0] === '"' || token[0] === "'") 
+                && token[0] === token[token.length - 1]);
+    }
+
+    function isNum(token) {
+        return !(isNaN(Number(token)));
+    }
+
+    if(token === 'variable') {
         obj['type'] = 'Declaration';
-        obj['value'] = str;
-    } else if(str === '=') {
-        obj['type'] = 'Operator-Equals';
-        obj['value'] = str;
-    } else if((str[0] === '"' && str[str.length - 1] === '"') || 
-              (str[0] === "'" && str[str.length - 1] === "'")) {
+        obj['value'] = token;
+    } else if(isString(token)) {
         obj['type'] = 'String'
-        obj['value'] = str;
-    } else if(!isNaN(Number(str))) {
+        obj['value'] = token;
+    } else if(isNum(token)) {
         obj['type'] = 'Number';
-        obj['value'] = Number(str);
-    } else if(str === '+') {
-        obj['type'] = 'Operator-Plus';
-        obj['value'] = str;
-    } else if(str === '-') {
-        obj['type'] = 'Operator-Minus';
-        obj['value'] = str;
-    } else if(str === '*') {
-        obj['type'] = 'Operator-Multiply';
-        obj['value'] = str;
-    } else if(str === '/') {
-        obj['type'] = 'Operator-Divide';
-        obj['value'] = str;
+        obj['value'] = Number(token);
+    } else if(isOp(token)) {
+        obj['type'] = `Operator-${token}`;
+        obj['value'] = token;
     } else {
         obj['type'] = 'Identifier';
-        obj['value'] = str;
+        obj['value'] = token;
     }
 
     return obj;
@@ -50,10 +48,11 @@ function parseStatement(str) {
 function lex(content) {
     let buffer = '';
     let iter = 0;
+    let tokens = [];
 
     while(iter < content.length) {
         if(content[iter] === ' ') {
-            result.push(parseStatement(buffer));
+            tokens.push(parseStatement(buffer));
             buffer = '';
         } else {
             buffer += content[iter];
@@ -63,10 +62,12 @@ function lex(content) {
     }
 
     if (buffer !== '') {
-        result.push(parseStatement(buffer));
+        tokens.push(parseStatement(buffer));
     }
+
+    return tokens;
 }
 
-lex(content);
+const result = lex(content);
 
 console.log(result);
