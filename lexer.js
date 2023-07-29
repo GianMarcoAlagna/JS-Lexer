@@ -8,22 +8,24 @@ const content = fs.readFileSync('./file.oc', 'utf-8', async (err, dat) => {
     }
 });
 
-// console.log(content);
 let result = [];
 
 function parseStatement(str) {
     const obj = {};
-
     console.log(str)
-    if(str === 'variable') {
-        obj['type'] = 'declaration';
-        obj['value'] = str;
 
+    if(str === 'variable') {
+        obj['type'] = 'Declaration';
+        obj['value'] = str;
     } else if(str === '=') {
-        obj['type'] = 'equals';
+        obj['type'] = 'Equals';
+        obj['value'] = str;
+    } else if((str[0] === '"' && str[str.length - 1] === '"') || 
+              (str[0] === "'" && str[str.length - 1] === "'")) {
+        obj['type'] = 'String'
         obj['value'] = str;
     } else {
-        obj['type'] = 'identifier';
+        obj['type'] = 'Identifier';
         obj['value'] = str;
     }
 
@@ -43,6 +45,10 @@ function lex(content) {
         }
 
         iter++;
+    }
+
+    if (buffer !== '') {
+        result.push(parseStatement(buffer));
     }
 }
 
