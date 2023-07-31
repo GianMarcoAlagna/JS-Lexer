@@ -34,8 +34,11 @@ function parseStatement(token) {
     } else if(isNum(token)) {
         obj['type'] = 'Number';
         obj['value'] = Number(token);
+    } else if(token === '=') {
+        obj['type'] = 'Assignment';
+        obj['value'] = token;
     } else if(isOp(token)) {
-        obj['type'] = `Operator-${token}`;
+        obj['type'] = `Operator`;
         obj['value'] = token;
     } else {
         obj['type'] = 'Identifier';
