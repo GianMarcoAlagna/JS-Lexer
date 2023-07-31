@@ -1,16 +1,9 @@
-const fs = require('fs');
-
-const content = fs.readFileSync('./file.oc', 'utf-8', async (err, dat) => {
-    if(err) {
-        console.log(err);
-    } else {
-        return dat
-    }
-});
+function handleEnd() {
+    return {type: 'Symbol', value: ';'};
+}
 
 function parseStatement(token) {
     const obj = {};
-    console.log(token)
 
     function isOp(token) {
         return /[+\-*/=]/.test(token);
@@ -23,6 +16,10 @@ function parseStatement(token) {
 
     function isNum(token) {
         return !(isNaN(Number(token)));
+    }
+
+    function isFunction(token) {
+        return token === 'print' || token === 'func';
     }
 
     if(token === 'variable') {
@@ -40,6 +37,9 @@ function parseStatement(token) {
     } else if(isOp(token)) {
         obj['type'] = `Operator`;
         obj['value'] = token;
+    } else if(isFunction(token)) {
+        obj['type'] = 'Function';
+        obj['value'] = token;
     } else {
         obj['type'] = 'Identifier';
         obj['value'] = token;
@@ -54,6 +54,11 @@ function lex(content) {
     let tokens = [];
 
     while(iter < content.length) {
+        if(content[iter] === ';') {
+            tokens.push(parseStatement(buffer));
+            tokens.push(handleEnd());
+            buffer = '';
+        }
         if(content[iter] === ' ') {
             tokens.push(parseStatement(buffer));
             buffer = '';
@@ -63,14 +68,16 @@ function lex(content) {
 
         iter++;
     }
-
-    if (buffer !== '') {
-        tokens.push(parseStatement(buffer));
-    }
+    
+    // this was originally for when the iterator went over and there was content left in the buffer, but with the semi-colon,
+    // the lexer knows where the end of a statement is
+    // if (buffer !== '') {
+    //     tokens.push(parseStatement(buffer));
+    // }
 
     return tokens;
 }
 
-const result = lex(content);
 
-console.log(result);
+
+module.exports = lex;
