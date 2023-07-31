@@ -1,51 +1,64 @@
 const tokensList = [
-    { type: 'Number', value: 123 },
-    { type: 'Operator', value: '+' },
-    { type: 'Number', value: 3 },
-    { type: 'Operator', value: '-' },
-    { type: 'Number', value: 2 }
+  { type: 'Number', value: 123 },
+  { type: 'Operator', value: '+' },
+  { type: 'Number', value: 3 },
+  { type: 'Operator', value: '*' },
+  { type: 'Number', value: 10 },
 ];
-let token = 0;
 
 function parse(tokens) {
-    function parseExpr() {
-        let result = parseTerm();
+  let tokenIndex = 0;
 
-        while(token < tokens.length && (tokens[token].value) === '+' || (tokens[token].value) === '-') {
-            let op = tokens[token];
-            const right = parseTerm();
-            
-            if(op.value === '+') {
-                token++
-                result += right;
-            }
-        }
-        
-        return result;
+  function parseExpr() {
+    let result = parseTerm();
+
+    while (tokenIndex < tokens.length && (tokens[tokenIndex].value === '+' || tokens[tokenIndex].value === '-')) {
+      const op = tokens[tokenIndex].value;
+      if(tokenIndex < tokens.length - 1) tokenIndex++;
+      const right = parseTerm();
+
+      if (op === '+') {
+        result += right;
+      } else if (op === '-') {
+        result -= right;
+      }
     }
+
+    return result;
+  }
+
+  function parseTerm() {
+    let result = parseFactor();
+
+    while (tokenIndex < tokens.length && (tokens[tokenIndex].value === '*' || tokens[tokenIndex].value === '/')) {
+      const op = tokens[tokenIndex].value;
+      if(tokenIndex < tokens.length - 1) tokenIndex++;
+      const right = parseFactor();
+
+      if (op === '*') {
+        result *= right;
+      } else if (op === '/') {
+        result /= right;
+      } else {
+        throw new Error(`Unexpected Token: ${op}`);
+      }
+    }
+
+    return result;
+  }
+
+  function parseFactor() {
+    const curr = tokens[tokenIndex];
     
-    function parseTerm() {
-        let result = parseNum()
-        
-        console.log(tokens[token])
-        while(token < tokens.length && tokens[token].value === '*' || tokens[token].value === '/') {
-            token++;
-            console.log('test');
-        }
-
-        return result;
+    if(tokenIndex < tokens.length - 1) tokenIndex++;
+    if (curr.type === 'Number') {
+      return curr.value;
     }
 
-    function parseNum() {
-        let curr = tokens[token];
+    throw new Error('Invalid token: Expected a Number');
+  }
 
-        if(curr.type === 'Number') {
-            token++;
-            return curr.value;
-        }
-    }
-
-    return parseExpr();
+  return parseExpr();
 }
 
-console.log(parse(tokensList));
+parse(tokensList);
