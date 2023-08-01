@@ -1,5 +1,5 @@
 function handleEnd() {
-    return {type: 'Symbol', value: ';'};
+    return { type: 'Symbol', value: ';' };
 }
 
 function parseStatement(token) {
@@ -52,18 +52,18 @@ function lex(content) {
     let buffer = '';
     let iter = 0;
     let tokens = [];
-
     while(iter < content.length) {
-        if(content[iter] === ';') {
+        if(content[iter] === ';') { // handle end of line
             tokens.push(parseStatement(buffer));
             tokens.push(handleEnd());
+            iter++ // iterate past the line ending symbol
             buffer = '';
         }
-        if(content[iter] === ' ') {
-            tokens.push(parseStatement(buffer));
+        if(content[iter] === ' ') { // handle next statement, marked by spaces
+        tokens.push(parseStatement(buffer));
             buffer = '';
         } else {
-            buffer += content[iter];
+            buffer += content[iter]; // add the current index to the buffer
         }
 
         iter++;
@@ -79,5 +79,4 @@ function lex(content) {
 }
 
 
-
-module.exports = lex;
+export default lex;

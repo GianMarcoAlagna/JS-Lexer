@@ -1,35 +1,47 @@
-const lex = require('./lexer');
-const fs = require('fs');
+import lex from './lexer.js';
+import { readFileSync } from 'fs';
 
-const content = fs.readFileSync('./file.oc', 'utf-8', (err, dat) => {
+const content = readFileSync('./file.oc', 'utf-8', (err, dat) => {
     if(err) {
         console.log(err);
     } else {
         return dat
     }
-});
+}).replace(/(\r\n|\n|\r)/g, "");
 
 const tokens = lex(content);
 
 function parse(tokens) {
   let tokenIndex = 0;
+  const evaluation = [];
+
   function incrementToken() {
     if(tokenIndex < tokens.length - 1) tokenIndex++;
   }
   
   function begin() {
     const currToken = tokens[tokenIndex];
+    if(currToken.value === ';') {
+      incrementToken();
+    }
+
+    if(!tokens[tokenIndex + 1]) { // check for tokens at next index, if none, then return the full result
+      return evaluation;
+    }
 
     if (currToken.type === 'Function') {
       if (currToken.value === 'print') {
         incrementToken();
-        parsePrint();
+        evaluation.push(parsePrint());
       } else {
         throw new Error(`Invalid Function Call -> ${currToken.value}`)
       }
     } else if (currToken.type === 'Number') {
-      return parseExpr();
+      evaluation.push(parseExpr());
+      incrementToken();
     }
+
+    return begin(); // recurse until no tokens are left
   }
 
   function parsePrint() {
@@ -40,9 +52,9 @@ function parse(tokens) {
       incrementToken();
     }
 
-    console.log(line);
     incrementToken();
-    begin(); // end of line, begin parsing next line
+    // begin(); // end of line, begin parsing next line // NOT NEEDED
+    return line;
   }
 
   function parseExpr() {
@@ -97,4 +109,8 @@ function parse(tokens) {
   return begin();
 }
 
-parse(tokens);
+const result = parse(tokens);
+
+for(let evaluation of result) { // loop through the array of results
+  console.log(evaluation);
+}
