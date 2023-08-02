@@ -10,7 +10,6 @@ const content = fs.readFileSync('./file.oc', 'utf-8', async (err, dat) => {
 
 function parseStatement(token) {
     const obj = {};
-    console.log(token)
 
     function isOp(token) {
         return /[+\-*/=]/.test(token);
@@ -35,7 +34,7 @@ function parseStatement(token) {
         obj['type'] = 'Number';
         obj['value'] = Number(token);
     } else if(isOp(token)) {
-        obj['type'] = `Operator-${token}`;
+        obj['type'] = 'Operator';
         obj['value'] = token;
     } else {
         obj['type'] = 'Identifier';
@@ -68,6 +67,34 @@ function lex(content) {
     return tokens;
 }
 
-const result = lex(content);
+function parse(tokens) {
+    function handleMath(num1, num2, op) {
+        if(op === '+') return num1 + num2;
+        else if(op === '-') return num1 - num2;
+        else if(op === '*') return num1 * num2;
+        else if(op === '/') return num1 / num2;
+        else throw `Syntax error: invalid operator [${op}]`;
+    }
+    
+    let iter = 0;
+    let eval = 0;
+    while(iter < tokens.length) {
+        if(tokens[iter].type === 'Operator') {
+            if(tokens[iter - 1].type === 'Number' && tokens[iter + 1].type === 'Number') {
+                if(eval) {
+                    eval += handleMath(eval, tokens[iter + 1].value, tokens[iter].value)
+                } else {
+                    eval += handleMath(tokens[iter - 1].value, tokens[iter + 1].value, tokens[iter].value);
+                }
+            } else {
+                throw 'Syntax Error';
+            }
+        }
+        iter++;
+    }
+    return eval;
+}
+
+const result = parse(lex(content));
 
 console.log(result);
